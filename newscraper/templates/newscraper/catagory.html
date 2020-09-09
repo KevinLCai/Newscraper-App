@@ -70,8 +70,11 @@
 								<hr />
 
 								<h5 style="text-align: center;">If you'd like to verify these are indeed the latest headlines:</h5>
+								{% if catagory == 'US Election' %}
+								<p style="text-align: center;"><a href="https://www.bbc.co.uk/news/election/us2020" target="_blank">Click here to go to BBC News</a></p>
+								{% else %}
 								<p style="text-align: center;"><a href="https://www.bbc.co.uk/news/{{ catagory|lower }}" target="_blank">Click here to go to BBC News</a></p>
-
+								{% endif %}
 								<h5 style="text-align: center;">Source code:</h5>
 								<p style="text-align: center;"><a href="https://github.com/KevinLCai/Newscraper-App" target="_blank">Click here for the code!</a></p>
 
