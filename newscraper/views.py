@@ -18,47 +18,6 @@ from string import punctuation
 from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS as stop_words
 import concurrent.futures
 
-def finalise(url):
-    try:
-        array2 = []
-        article = requests.get(url)
-        article = article.content
-        article = BeautifulSoup(article, 'lxml')
-        paragraphs = article.find_all('p')
-
-        string_concat = ''
-        #Concatenate text into one string!
-        for paragraph in paragraphs:
-            string = paragraph.text
-            string_concat += string + ' '
-        text = string_concat
-
-        text = text.replace("Share this withEmailFacebookMessengerMessengerTwitterPinterestWhatsAppLinkedInCopy this linkThese are external links and will open in a new window", "")
-        text = text.replace("The BBC is not responsible for the content of external sites. Read about our approach to external linking.", "")
-        text = text.replace("Share this with Email Facebook Messenger Messenger Twitter Pinterest WhatsApp LinkedIn", "")
-        text = text.replace("Copy this link These are external links and will open in a new window", "")
-
-        #Tokenise
-        tokens = tokenizer(text)
-        sents = sent_tokenizer(text)
-        word_counts = count_words(tokens)
-        word_counts
-        freq_dist = word_freq_distribution(word_counts)
-        freq_dist
-        sent_scores = score_sentences(sents, freq_dist)
-        sent_scores
-
-        #Generate summary
-        summary, summary_sent_scores = summarize(sent_scores, 3)
-        #print(titles[number-1] + '\n')
-        #print(summary)
-        array2.append(summary)
-        
-        #print('\n')
-    except IndexError:
-        pass
-    return summary
-
 def index(request):
     return render(request, "newscraper/index.html")
 
@@ -73,12 +32,21 @@ def return_page(request, catagory):
     # with concurrent.futures.ProcessPoolExecutor() as executor:
     urls = info[0]
     titles = info[1]
+    summaries = []
+
+    for url in urls:
+        summary = finalise(url)
+        summaries.append(summary)
+
+    for num in range(0,5):
+        print(titles[num] +'\n')
+        print(summaries[num] + '\n')
     
-    pool = multiprocessing.Pool()
-    summaries = [pool.map(finalise, urls)]
-    pool.close()
-    pool.join()
-    summaries = summaries[0]
+    # pool = multiprocessing.Pool()
+    # summaries = [pool.map(finalise, urls)]
+    # pool.close()
+    # pool.join()
+    # summaries = summaries[0]
 
     # if final_summaries:
     return render(request, "newscraper/catagory.html", {
