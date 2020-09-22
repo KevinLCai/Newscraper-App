@@ -35,7 +35,7 @@ def scrape1(catagory, array1):
 
     def findLinks():
         """Find all of the links to articles and add them to a urls array"""
-        while len(urls) <= 5:
+        while len(urls) <= 6:
             for link in links:
                 try:
                     url = 'https://www.bbc.co.uk' + link.attrs['href']
@@ -43,21 +43,21 @@ def scrape1(catagory, array1):
                         urls.append(url)
                 except:
                     pass
+    
+    final_urls = []
 
     def findTitle():
         """Find title for each url-article"""
+        
         while len(array1) < 5:
             for url in urls:
                 try:
                     article = requests.get(url)
                     article = article.content
                     article = BeautifulSoup(article, 'lxml')
-                    
                     article_title = article.find('h1', class_ = 'story-body__h1').text
-                    
-                    
                     array1.append(article_title)
-                    #print(article_title)
+                    final_urls.append(url)
                 except AttributeError:
                     try:
                         article_title = article.find('h1', class_ = 'vxp-media__headline').text
