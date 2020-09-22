@@ -1,4 +1,15 @@
-#Import necessary modules and functions
+import json
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
+from django.db import IntegrityError
+from django.http import JsonResponse
+from django.shortcuts import HttpResponse, HttpResponseRedirect, render
+from django.urls import reverse
+from django.views.decorators.csrf import csrf_exempt
+# from .web_scraper import *
+import time
+import multiprocessing
+
 import requests
 from bs4 import BeautifulSoup
 import webbrowser
@@ -6,11 +17,6 @@ from collections import Counter
 from string import punctuation
 from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS as stop_words
 import concurrent.futures
-
-
-
-
-urls = ['https://www.bbc.co.uk/news/health-54163226', 'https://www.bbc.co.uk/news/uk-51768274', 'https://www.bbc.co.uk/news/uk-54165870', 'https://www.bbc.co.uk/news/uk-northern-ireland-53988050', 'https://www.bbc.co.uk/news/disability-53863013']
 
 
 def scrape1(catagory, array1):
@@ -33,6 +39,7 @@ def scrape1(catagory, array1):
     promo_story = soup.find('a', class_ ='gs-c-promo-heading gs-o-faux-block-link__overlay-link gel-paragon-bold gs-u-mt+ nw-o-link-split__anchor')
     links.insert(0, promo_story)
 
+    
     def findLinks():
         """Find all of the links to articles and add them to a urls array"""
         while len(urls) <= 6:
@@ -65,6 +72,15 @@ def scrape1(catagory, array1):
                         #print(article_title)
                     except AttributeError:
                         pass
+
+
+
+    findLinks()
+    #for url in urls[:5]:
+        #print(url)
+    findTitle()
+
+    return [final_urls, array1]
 
 
 
@@ -131,3 +147,70 @@ def summarize(sent_scores, k):
         summary += t[0].strip()+'. '
         scores.append((t[1], t[0]))
     return summary[:-1], scores
+
+def finalise(url):
+    try:
+        array2 = []
+        article = requests.get(url)
+        article = article.content
+        article = BeautifulSoup(article, 'lxml')
+        paragraphs = article.find_all('p')
+
+        string_concat = ''
+        #Concatenate text into one string!
+        for paragraph in paragraphs:
+            string = paragraph.text
+            string_concat += string + ' '
+        text = string_concat
+
+        text = text.replace("Share this withEmailFacebookMessengerMessengerTwitterPinterestWhatsAppLinkedInCopy this linkThese are external links and will open in a new window", "")
+        text = text.replace("The BBC is not responsible for the content of external sites. Read about our approach to external linking.", "")
+        text = text.replace("Share this with Email Facebook Messenger Messenger Twitter Pinterest WhatsApp LinkedIn", "")
+        text = text.replace("Copy this link These are external links and will open in a new window", "")
+
+        
+
+        #Tokenise
+        tokens = tokenizer(text)
+        sents = sent_tokenizer(text)
+        word_counts = count_words(tokens)
+        word_counts
+        freq_dist = word_freq_distribution(word_counts)
+        freq_dist
+        sent_scores = score_sentences(sents, freq_dist)
+        sent_scores
+
+        #Generate summary
+        summary, summary_sent_scores = summarize(sent_scores, 3)
+        #print(titles[number-1] + '\n')
+        #print(summary)
+        array2.append(summary)
+        
+        #print('\n')
+    except IndexError:
+        pass
+    return summary
+
+
+# titles = []
+    
+# info = scrape1('uk', titles)
+
+# # #Multiprocessing to speed up scraping and summarising
+# # with concurrent.futures.ProcessPoolExecutor() as executor:
+# urls = info[0]
+# titles = info[1]
+
+# # print(urls)
+# # print(titles)
+
+# summaries = []
+
+# for url in urls:
+#     summary = finalise(url)
+#     summaries.append(summary)
+
+# for num in range(0,5):
+#     print(titles[num] +'\n')
+#     print(summaries[num] + '\n')
+
