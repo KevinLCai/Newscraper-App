@@ -9,6 +9,7 @@ from django.views.decorators.csrf import csrf_exempt
 from .web_scraper import *
 import time
 import multiprocessing
+from threading import Thread
 
 import requests
 from bs4 import BeautifulSoup
@@ -34,13 +35,11 @@ def return_page(request, catagory):
     titles = info[1]
     summaries = []
 
-    for url in urls:
-        summary = finalise(url)
-        summaries.append(summary)
-
-    for num in range(0,5):
-        print(titles[num] +'\n')
-        print(summaries[num] + '\n')
+    pool = multiprocessing.Pool()
+    summaries = [pool.map(finalise, urls)]
+    pool.close()
+    pool.join()
+    summaries = summaries[0]
     
     # pool = multiprocessing.Pool()
     # summaries = [pool.map(finalise, urls)]
